@@ -1,13 +1,9 @@
 import ImagesApiService from './js/fetch-imagesAPI';
 import Notiflix from 'notiflix';
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
-
-const refs = {
-  serchForm: document.querySelector('.search-form'),
-  imagesContainer: document.querySelector('.gallery'),
-  loadMoreBtn: document.querySelector('.load-more'),
-};
+import refreshSimpleLigthbox from './js/simplelightbox';
+import smoothScroll from './js/smooth-scroll';
+import { renderImagesMarkup, clearImagesContainer } from './js/markup';
+import { refs } from './js/refs';
 
 const imagesApiService = new ImagesApiService();
 
@@ -57,70 +53,4 @@ async function fetchImages() {
     console.log(error);
     Notiflix.Notify.failure('Error', error);
   }
-}
-
-function clearImagesContainer() {
-  refs.imagesContainer.innerHTML = '';
-}
-
-function renderImagesMarkup(data) {
-  const makrup = createImagesMarkup(data);
-  refs.imagesContainer.insertAdjacentHTML('beforeend', makrup);
-}
-
-function createImagesMarkup(data) {
-  return data
-    .map(
-      ({
-        largeImageURL,
-        tags,
-        webformatURL,
-        likes,
-        views,
-        comments,
-        downloads,
-      }) => {
-        return `<div class="photo-card">
-    <a class="gallery__item" href="${largeImageURL}">
-        <img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" />
-    
-  <div class="info">
-    <p class="info-item">
-      <b>Likes</b>
-      ${likes}
-    </p>
-    <p class="info-item">
-      <b>Views</b>
-      ${views}
-    </p>
-    <p class="info-item">
-      <b>Comments</b>
-      ${comments}
-    </p>
-    <p class="info-item">
-      <b>Downloads</b>
-      ${downloads}
-    </p>
-  </div>
-  </a>
-</div>`;
-      }
-    )
-    .join('');
-}
-
-function refreshSimpleLigthbox() {
-  let lightbox = new SimpleLightbox('.gallery a');
-  lightbox.refresh('show.simplelightbox', function () {});
-}
-
-function smoothScroll() {
-  const { height: cardHeight } = document
-    .querySelector('.gallery')
-    .firstElementChild.getBoundingClientRect();
-
-  window.scrollBy({
-    top: cardHeight * 2,
-    behavior: 'smooth',
-  });
 }
