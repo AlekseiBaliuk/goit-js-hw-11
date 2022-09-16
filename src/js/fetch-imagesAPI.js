@@ -1,4 +1,3 @@
-// const { default: axios } = require('axios');
 import axios from 'axios';
 
 export default class ImagesApiService {

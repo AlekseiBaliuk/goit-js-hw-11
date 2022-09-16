@@ -4,11 +4,11 @@ import refreshSimpleLigthbox from './js/simplelightbox';
 import smoothScroll from './js/smooth-scroll';
 import { renderImagesMarkup, clearImagesContainer } from './js/markup';
 import { refs } from './js/refs';
+import './js/btn-to-top';
 
 const imagesApiService = new ImagesApiService();
 
 refs.serchForm.addEventListener('submit', onFormSubmit);
-refs.loadMoreBtn.addEventListener('click', fetchImages);
 
 function onFormSubmit(e) {
   e.preventDefault();
@@ -24,7 +24,8 @@ function onFormSubmit(e) {
   imagesApiService.resetPage();
   clearImagesContainer();
   fetchImages();
-  refs.loadMoreBtn.classList.add('visible');
+
+  e.currentTarget.reset();
 }
 
 async function fetchImages() {
@@ -33,20 +34,35 @@ async function fetchImages() {
     // console.log(res);
 
     if (res.hits.length === 0) {
-      return console.log('error');
+      return Notiflix.Notify.failure('Error');
     }
 
-    if (imagesApiService.imgCounter >= res.totalHits) {
-      refs.loadMoreBtn.classList.remove('visible');
-      Notiflix.Notify.warning(
-        "We're sorry, but you've reached the end of search results."
-      );
-    }
+    const onEntry = entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && imagesApiService.searchQuery !== '') {
+          imagesApiService.incrementPage();
+          renderImagesMarkup(res.hits);
+          refreshSimpleLigthbox();
+        }
 
-    imagesApiService.incrementPage();
-    renderImagesMarkup(res.hits);
-    smoothScroll();
-    refreshSimpleLigthbox();
+        if (imagesApiService.page > 2) {
+          smoothScroll();
+        }
+
+        if (imagesApiService.imgCounter >= res.totalHits) {
+          Notiflix.Notify.warning(
+            "We're sorry, but you've reached the end of search results."
+          );
+          observe.unobserve(refs.sentinel);
+        }
+      });
+    };
+
+    const observe = new IntersectionObserver(onEntry, {
+      rootMargin: '150px',
+    });
+
+    observe.observe(refs.sentinel);
 
     Notiflix.Notify.success(`Hooray! We found ${res.totalHits} images.`);
   } catch (error) {

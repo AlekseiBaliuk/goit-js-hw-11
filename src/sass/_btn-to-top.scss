@@ -1,0 +1,26 @@
+.back-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #ccc;
+  background-image: url('../images/to-top-arrow-png.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+
+  height: 40px;
+  width: 40px;
+  z-index: 2000;
+
+  transform: translateY(200%);
+  transition: transform 250ms linear;
+}
+
+.back-to-top-show {
+  transform: translateY(0);
+}
