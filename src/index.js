@@ -10,7 +10,38 @@ const imagesApiService = new ImagesApiService();
 
 refs.serchForm.addEventListener('submit', onFormSubmit);
 
-function onFormSubmit(e) {
+const observe = new IntersectionObserver(
+  entries => {
+    entries.forEach(async entry => {
+      if (entry.isIntersecting && imagesApiService.searchQuery !== '') {
+        imagesApiService.incrementPage();
+        try {
+          const res = await imagesApiService.fetchImages();
+          renderImagesMarkup(res.hits);
+          refreshSimpleLigthbox();
+
+          if (imagesApiService.page > 2) {
+            smoothScroll();
+          }
+
+          if (imagesApiService.imgCounter >= res.totalHits) {
+            Notiflix.Notify.warning(
+              "We're sorry, but you've reached the end of search results."
+            );
+            observe.unobserve(refs.sentinel);
+          }
+        } catch (error) {
+          Notiflix.Notify.failure('Error', error);
+        }
+      }
+    });
+  },
+  {
+    rootMargin: '150px',
+  }
+);
+
+async function onFormSubmit(e) {
   e.preventDefault();
 
   imagesApiService.searchQuery = e.currentTarget.searchQuery.value.trim();
@@ -23,76 +54,20 @@ function onFormSubmit(e) {
 
   imagesApiService.resetPage();
   clearImagesContainer();
-  fetchImages();
-
   e.currentTarget.reset();
-}
 
-async function fetchImages() {
   try {
     const res = await imagesApiService.fetchImages();
-    // console.log(res);
 
     if (res.hits.length === 0) {
       return Notiflix.Notify.failure('Error');
     }
 
-    const observe = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting && imagesApiService.searchQuery !== '') {
-            imagesApiService.incrementPage();
-            renderImagesMarkup(res.hits);
-            refreshSimpleLigthbox();
-          }
-
-          if (imagesApiService.page > 2) {
-            smoothScroll();
-          }
-
-          if (imagesApiService.imgCounter >= res.totalHits) {
-            Notiflix.Notify.warning(
-              "We're sorry, but you've reached the end of search results."
-            );
-            observe.unobserve(refs.sentinel);
-          }
-        });
-      },
-      {
-        rootMargin: '150px',
-      }
-    );
-
-    // const onEntry = entries => {
-    //   entries.forEach(entry => {
-    // if (entry.isIntersecting && imagesApiService.searchQuery !== '') {
-    //   imagesApiService.incrementPage();
-    //   renderImagesMarkup(res.hits);
-    //   refreshSimpleLigthbox();
-    // }
-
-    // if (imagesApiService.page > 2) {
-    //   smoothScroll();
-    // }
-
-    // if (imagesApiService.imgCounter >= res.totalHits) {
-    //   Notiflix.Notify.warning(
-    //     "We're sorry, but you've reached the end of search results."
-    //   );
-    //   observe.unobserve(refs.sentinel);
-    // }
-    //   });
-    // };
-
-    // const observe = new IntersectionObserver(onEntry, {
-    //   rootMargin: '150px',
-    // });
-
+    renderImagesMarkup(res.hits);
+    refreshSimpleLigthbox();
     observe.observe(refs.sentinel);
-
     Notiflix.Notify.success(`Hooray! We found ${res.totalHits} images.`);
   } catch (error) {
-    console.log(error);
     Notiflix.Notify.failure('Error', error);
   }
 }
