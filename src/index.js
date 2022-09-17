@@ -37,30 +37,56 @@ async function fetchImages() {
       return Notiflix.Notify.failure('Error');
     }
 
-    const onEntry = entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && imagesApiService.searchQuery !== '') {
-          imagesApiService.incrementPage();
-          renderImagesMarkup(res.hits);
-          refreshSimpleLigthbox();
-        }
+    const observe = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && imagesApiService.searchQuery !== '') {
+            imagesApiService.incrementPage();
+            renderImagesMarkup(res.hits);
+            refreshSimpleLigthbox();
+          }
 
-        if (imagesApiService.page > 2) {
-          smoothScroll();
-        }
+          if (imagesApiService.page > 2) {
+            smoothScroll();
+          }
 
-        if (imagesApiService.imgCounter >= res.totalHits) {
-          Notiflix.Notify.warning(
-            "We're sorry, but you've reached the end of search results."
-          );
-          observe.unobserve(refs.sentinel);
-        }
-      });
-    };
+          if (imagesApiService.imgCounter >= res.totalHits) {
+            Notiflix.Notify.warning(
+              "We're sorry, but you've reached the end of search results."
+            );
+            observe.unobserve(refs.sentinel);
+          }
+        });
+      },
+      {
+        rootMargin: '150px',
+      }
+    );
 
-    const observe = new IntersectionObserver(onEntry, {
-      rootMargin: '150px',
-    });
+    // const onEntry = entries => {
+    //   entries.forEach(entry => {
+    // if (entry.isIntersecting && imagesApiService.searchQuery !== '') {
+    //   imagesApiService.incrementPage();
+    //   renderImagesMarkup(res.hits);
+    //   refreshSimpleLigthbox();
+    // }
+
+    // if (imagesApiService.page > 2) {
+    //   smoothScroll();
+    // }
+
+    // if (imagesApiService.imgCounter >= res.totalHits) {
+    //   Notiflix.Notify.warning(
+    //     "We're sorry, but you've reached the end of search results."
+    //   );
+    //   observe.unobserve(refs.sentinel);
+    // }
+    //   });
+    // };
+
+    // const observe = new IntersectionObserver(onEntry, {
+    //   rootMargin: '150px',
+    // });
 
     observe.observe(refs.sentinel);
 

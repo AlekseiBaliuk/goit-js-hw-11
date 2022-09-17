@@ -1,4 +1,5 @@
 import axios from 'axios';
+// axios.defaults.baseURL = 'https://pixabay.com/api/';
 
 export default class ImagesApiService {
   #API_KEY = '29903101-949784c6f6ed1a6d356bb42d9';
