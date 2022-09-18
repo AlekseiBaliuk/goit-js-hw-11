@@ -7,9 +7,10 @@ import {
 } from './js/notiflix-messages';
 import refreshSimpleLigthbox from './js/simplelightbox';
 import smoothScroll from './js/smooth-scroll';
-import { renderImagesMarkup, clearImagesContainer } from './js/markup';
+// import { renderImagesMarkup, clearImagesContainer } from './js/markup';
 import { refs } from './js/refs';
 import './js/btn-to-top';
+import cardMarkup from './templates/cardMarkup.hbs';
 
 const imagesApiService = new ImagesApiService();
 
@@ -22,7 +23,8 @@ const observe = new IntersectionObserver(
         imagesApiService.incrementPage();
         try {
           const res = await imagesApiService.fetchImages();
-          renderImagesMarkup(res.hits);
+          refs.imagesContainer.insertAdjacentHTML('beforeend', cardMarkup(res));
+          // renderImagesMarkup(res.hits);
           refreshSimpleLigthbox();
 
           if (imagesApiService.page > 2) {
@@ -54,17 +56,17 @@ async function onFormSubmit(e) {
   }
 
   imagesApiService.resetPage();
-  clearImagesContainer();
+  // clearImagesContainer();
   e.currentTarget.reset();
 
   try {
     const res = await imagesApiService.fetchImages();
-
+    console.log(res);
     if (res.hits.length === 0) {
       return onWarningMessage();
     }
-
-    renderImagesMarkup(res.hits);
+    refs.imagesContainer.innerHTML = cardMarkup(res);
+    // renderImagesMarkup(res.hits);
     refreshSimpleLigthbox();
     observe.observe(refs.sentinel);
     onSuccesMessage(res);
