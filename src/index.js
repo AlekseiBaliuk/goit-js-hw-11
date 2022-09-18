@@ -1,5 +1,10 @@
 import ImagesApiService from './js/fetch-imagesAPI';
-import Notiflix from 'notiflix';
+import {
+  onSuccesMessage,
+  onWarningMessage,
+  onWarningMessageEndSearchResults,
+  onErrorMessage,
+} from './js/notiflix-messages';
 import refreshSimpleLigthbox from './js/simplelightbox';
 import smoothScroll from './js/smooth-scroll';
 import { renderImagesMarkup, clearImagesContainer } from './js/markup';
@@ -25,13 +30,11 @@ const observe = new IntersectionObserver(
           }
 
           if (imagesApiService.imgCounter >= res.totalHits) {
-            Notiflix.Notify.warning(
-              "We're sorry, but you've reached the end of search results."
-            );
+            onWarningMessageEndSearchResults();
             observe.unobserve(refs.sentinel);
           }
         } catch (error) {
-          Notiflix.Notify.failure('Error', error);
+          onErrorMessage();
         }
       }
     });
@@ -47,9 +50,7 @@ async function onFormSubmit(e) {
   imagesApiService.searchQuery = e.currentTarget.searchQuery.value.trim();
 
   if (imagesApiService.searchQuery === '') {
-    return Notiflix.Notify.warning(
-      'Sorry, there are no images matching your search query. Please try again.'
-    );
+    return onWarningMessage();
   }
 
   imagesApiService.resetPage();
@@ -60,14 +61,14 @@ async function onFormSubmit(e) {
     const res = await imagesApiService.fetchImages();
 
     if (res.hits.length === 0) {
-      return Notiflix.Notify.failure('Error');
+      return onWarningMessage();
     }
 
     renderImagesMarkup(res.hits);
     refreshSimpleLigthbox();
     observe.observe(refs.sentinel);
-    Notiflix.Notify.success(`Hooray! We found ${res.totalHits} images.`);
+    onSuccesMessage(res);
   } catch (error) {
-    Notiflix.Notify.failure('Error', error);
+    onErrorMessage();
   }
 }
